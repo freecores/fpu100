@@ -94,7 +94,10 @@ signal s_exp_1, s_exp_2 : std_logic_vector(EXP_WIDTH-1 downto 0);
 
 signal s_fract_rnd : std_logic_vector(FRAC_WIDTH+4 downto 0);	
 signal s_roundup : std_logic;
-	
+signal s_sticky : std_logic;
+
+signal s_zero_fract : std_logic;	
+signal s_lost : std_logic;
 signal s_infa, s_infb : std_logic;
 signal s_nan_in, s_nan_op, s_nan_a, s_nan_b, s_nan_sign : std_logic;
 	
@@ -140,7 +143,7 @@ begin
 	begin
 		if rising_edge(clk_i) then
 			-- count the leading zero's of fraction, needed for left-shift	
-			s_zeros <= count_l_zeros(s_fract_28_i(26 downto 1));
+			s_zeros <= count_l_zeros(s_fract_28_i(26 downto 0));
 		end if;
 	end process;
 	
@@ -175,11 +178,14 @@ begin
 			end if;
 		end if;
 	end process;
-						 
+	
 	-- round
-	s_roundup <= s_fract_1(2) and ((s_fract_1(1) or s_fract_1(0))or s_fract_1(3)) when s_rmode_i="00" else -- round to nearset even
-							 (s_fract_1(2) or s_fract_1(1) or s_fract_1(0)) and (not s_sign_i) when s_rmode_i="10" else -- round up
-							 (s_fract_1(2) or s_fract_1(1) or s_fract_1(0)) and (s_sign_i) when s_rmode_i="11" else -- round down
+	
+	s_sticky <='1' when s_fract_1(0)='1' or (s_fract_28_i(0) and s_fract_28_i(27))='1' else '0'; --check last bit, before and after right-shift
+	
+	s_roundup <= s_fract_1(2) and ((s_fract_1(1) or s_sticky)or s_fract_1(3)) when s_rmode_i="00" else -- round to nearset even
+							 (s_fract_1(2) or s_fract_1(1) or s_sticky) and (not s_sign_i) when s_rmode_i="10" else -- round up
+							 (s_fract_1(2) or s_fract_1(1) or s_sticky) and (s_sign_i) when s_rmode_i="11" else -- round down
 							 '0'; -- round to zero(truncate = no rounding)
 	
 	s_fract_rnd <= s_fract_1 + "0000000000000000000000001000" when s_roundup='1' else s_fract_1;
@@ -207,22 +213,24 @@ begin
 								s_opb_i(31);
 								
 	-- check if result is inexact;
-	s_ine_o <= (or_reduce(s_fract_28_i(2 downto 0)) or  or_reduce(s_fract_1(2 downto 0)) or or_reduce(s_fract_2(2 downto 0))) and not(s_nan_a or s_nan_b);	
+	s_lost <= or_reduce(s_fract_28_i(2 downto 0)) or  or_reduce(s_fract_1(2 downto 0)) or or_reduce(s_fract_2(2 downto 0));
+	s_ine_o <= '1' when (s_lost or s_overflow)='1' and (s_infa or s_infb)='0' else '0';	
 	
-	s_overflow <= (s_expr1_9(8) or s_expr2_9(8)) and not(s_nan_a or s_nan_b); -- if true, output is infinity
+	s_overflow <='1' when (s_expr1_9(8) or s_expr2_9(8))='1' and (s_infa or s_infb)='0' else '0'; 
+	s_zero_fract <= '1' when s_zeros=27 and s_fract_28_i(27)='0' else '0'; -- '1' if fraction result is zero
 								
-	process(s_sign_i, s_exp_2, s_fract_2, s_nan_in, s_nan_op, s_nan_sign, s_infa, s_infb, s_overflow)
+	process(s_sign_i, s_exp_2, s_fract_2, s_nan_in, s_nan_op, s_nan_sign, s_infa, s_infb, s_overflow, s_zero_fract)
 	begin
 		if (s_nan_in or s_nan_op)='1' then
 			s_output_o <= s_nan_sign & QNAN;
 		elsif (s_infa or s_infb)='1' or s_overflow='1' then
 				s_output_o <= s_sign_i & INF;	
+		elsif s_zero_fract='1' then
+				s_output_o <= s_sign_i & ZERO_VECTOR;
 		else
 				s_output_o <= s_sign_i & s_exp_2 & s_fract_2(25 downto 3);
 		end if;
 	end process;
 
-	
-	
 	
 end rtl;

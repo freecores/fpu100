@@ -1,5 +1,9 @@
-Place in the FPU_II directory the source files for a reliable reference FPU.
-A possible option is Usselmann FPU. You can download all source files from the link given below and place 
-them in the FPU_II directory.
+To test the FPU core, do the following:
 
-Source: http://www.opencores.org/projects.cgi/web/fpu/overview
+1)	Build timesoftfloat.exe for your specific platform(read instructions in folder SoftFloat for howto do that). 
+	Before you do that, try the already included file.
+	
+2)	Create the testcases by running maketest.bat in folder test_bench. Default value is 100000 cases for each 
+	arithmetic operation and for each rounding mode. This comes up to 2 million test cases. 
+
+3) 	run fpusim.bat to simulate and test the FPU core using modelsim.
