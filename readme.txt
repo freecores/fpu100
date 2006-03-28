@@ -18,8 +18,4 @@ comppack.vhd
 fpu.vhd
 
 ***For simulation ****
-\test_bench\FPU_II\*.* ( a reliable reference FPU is needed for the testbench. For more info read readme.txt in test_bench)
-
-tb_fpu.vhd 
-
-To run then the simulation just execute fpusim.bat in a command prompt.
+To run the simulation read readme.txt in folder test_bench.

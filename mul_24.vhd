@@ -144,7 +144,7 @@ end process;
 s_sign_o <= s_signa_i xor s_signb_i;
 
 --"000000000000"
--- A = A_h x2^N + A_l , B = B_h x2^N + B_l
+-- A = A_h x 2^N + A_l , B = B_h x 2^N + B_l
 -- A x B = A_hxB_hx2^2N + (A_h xB_l + A_lxB_h)2^N + A_lxB_l
 a_h <= s_fracta_i(23 downto 12);
 a_l <= s_fracta_i(11 downto 0);
