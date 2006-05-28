@@ -104,7 +104,7 @@ architecture rtl of fpu is
     
 
 	constant MUL_SERIAL: integer range 0 to 1 := 0; -- 0 for parallel multiplier, 1 for serial
-	constant MUL_COUNT: integer:= 10; --10 for parallel multiplier, 33 for serial
+	constant MUL_COUNT: integer:= 11; --11 for parallel multiplier, 34 for serial
 		
 	-- Input/output registers
 	signal s_opa_i, s_opb_i : std_logic_vector(FP_WIDTH-1 downto 0);
@@ -397,18 +397,28 @@ begin
 	end if;	
 	end process;
 	        
-	-- Output Multiplexer. Arithmetic units that are not needed can be just commented out(Notice: you have to comment both s_output1 and s_ine_o)
-	s_output1<= postnorm_addsub_output_o when fpu_op_i="000" or fpu_op_i="001" else
-				post_norm_mul_output when fpu_op_i="010" else
-				post_norm_div_output when fpu_op_i="011" else
-				post_norm_sqrt_output when fpu_op_i="100" else
-				(others => '0');			
-	s_ine_o<= 	postnorm_addsub_ine_o when fpu_op_i="000" or fpu_op_i="001" else
-				post_norm_mul_ine when fpu_op_i="010" else
-				post_norm_div_ine when fpu_op_i="011" else		
-				post_norm_sqrt_ine_o when fpu_op_i="100" else			
-				'0';	
-	------------------------
+	-- Output Multiplexer
+	process(clk_i)
+	begin
+		if rising_edge(clk_i) then
+			if fpu_op_i="000" or fpu_op_i="001" then	
+				s_output1 		<= postnorm_addsub_output_o;
+				s_ine_o 		<= postnorm_addsub_ine_o;
+			elsif fpu_op_i="010" then
+				s_output1 	<= post_norm_mul_output;
+				s_ine_o 		<= post_norm_mul_ine;
+			elsif fpu_op_i="011" then
+				s_output1 	<= post_norm_div_output;
+				s_ine_o 		<= post_norm_div_ine;		
+			elsif fpu_op_i="100" then
+				s_output1 	<= post_norm_sqrt_output;
+				s_ine_o 	<= post_norm_sqrt_ine_o;			
+			else
+				s_output1 	<= (others => '0');
+				s_ine_o 		<= '0';
+			end if;
+		end if;
+	end process;	
 
 	
 	s_infa <= '1' when s_opa_i(30 downto 23)="11111111"  else '0';
