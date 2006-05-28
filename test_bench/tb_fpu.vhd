@@ -97,7 +97,7 @@ component fpu
 end component;
 
 
-signal clk_i : std_logic:= '0';
+signal clk_i : std_logic:= '1';
 signal opa_i, opb_i : std_logic_vector(31 downto 0);
 signal fpu_op_i		: std_logic_vector(2 downto 0);
 signal rmode_i : std_logic_vector(1 downto 0);
@@ -153,7 +153,8 @@ begin
 
 		---------------------------------------------------------------------------------------------------------------------------------------------------
 		---------------------------------------------------SoftFloat test vectors (10000 test cases for each operation) --------------------------------------------------------------------
-
+		
+		start_i <= 0;
 		while not endfile(testcases_file) loop
 
 			wait for CLK_PERIOD; start_i <= '1';
