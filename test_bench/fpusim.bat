@@ -19,7 +19,6 @@ vcom %REL%post_norm_sqrt.vhd
 vcom %REL%comppack.vhd
 vcom %REL%fpu.vhd
 
-
 vcom txt_util.vhd
 vcom tb_fpu.vhd
 
