@@ -80,7 +80,7 @@ signal s_ine_o 				: std_logic;
 signal s_overflow			: std_logic;
 	
 	
-signal s_shr1, s_shr2, s_shl : std_logic;
+signal s_shr1, s_shr2, s_shl, s_shr1e : std_logic;
 
 signal s_expr1_9, s_expr2_9, s_expl_9	: std_logic_vector(EXP_WIDTH downto 0);
 signal s_exp_shr1, s_exp_shr2, s_exp_shl : std_logic_vector(EXP_WIDTH-1 downto 0);
@@ -131,7 +131,7 @@ begin
 	-- check if shifting is needed
 	s_shr1 <= s_fract_28_i(27);
 	s_shl <= '1' when s_fract_28_i(27 downto 26)="00" and s_exp_i /= "00000000" else '0';
-	
+	s_shr1e <= '1' when s_fract_28_i(26)='1' and or_reduce(s_exp_i)='0' else '0'; --if exp is zero, and hidden bit=1, then exp=exp+1 ( no need to check s_fract_28_i(27)! )
 	-- stage 1a: right-shift (when necessary)
 	s_expr1_9 <= "0"&s_exp_i + "000000001";
 	s_fract_shr1 <= shr(s_fract_28_i, "1");
@@ -169,7 +169,7 @@ begin
 	process(clk_i)
 	begin
 		if rising_edge(clk_i) then	
-			if s_shr1='1' then
+			if s_shr1='1' or s_shr1e='1' then
 				s_exp_1 <= s_exp_shr1;
 			elsif s_shl='1' then
 				s_exp_1 <= s_exp_shl; 
