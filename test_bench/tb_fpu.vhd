@@ -153,7 +153,6 @@ begin
 
 		---------------------------------------------------------------------------------------------------------------------------------------------------
 		---------------------------------------------------SoftFloat test vectors (10000 test cases for each operation) --------------------------------------------------------------------
-		
 		start_i <= '0';
 		while not endfile(testcases_file) loop
 
@@ -181,9 +180,72 @@ begin
 			severity failure;
 			str_read(testcases_file,str_in);
 			
-		end loop;
+		end loop;		
 
+		-------- Boundary values-----
+		
+		start_i <= '0';
+		--		  seeeeeeeefffffffffffffffffffffff
+		--infinity
+		wait for CLK_PERIOD; start_i <= '1'; 
+		opa_i <= "01111111011111111111111111111111";  
+		opb_i <= "01111111011111111111111111111111"; 
+		fpu_op_i <= "000";
+		rmode_i <= "00";
+		wait for CLK_PERIOD; start_i <= '0'; wait until ready_o='1';
+		assert output_o="01111111100000000000000000000000"
+		report "Error!!!"
+		severity failure;
+		
+		--		  seeeeeeeefffffffffffffffffffffff
+		-- 1 x1.001 - 1x1.000 = 0x0.001
+		wait for CLK_PERIOD; start_i <= '1'; 
+		opa_i <= "00000000100100000000000000000000";  
+		opb_i <= "10000000100000000000000000000000"; 
+		fpu_op_i <= "000";
+		rmode_i <= "00";
+		wait for CLK_PERIOD; start_i <= '0'; wait until ready_o='1';
+		assert output_o="00000000000100000000000000000000"
+		report "Error!!!"
+		severity failure;	
 
+		--		  seeeeeeeefffffffffffffffffffffff
+		-- 10 x 1.0001 - 10 x 1.0000 = 
+		wait for CLK_PERIOD; start_i <= '1'; 
+		opa_i <= "00000001000010000000000000000000";  
+		opb_i <= "10000001000000000000000000000000"; 
+		fpu_op_i <= "000";
+		rmode_i <= "00";
+		wait for CLK_PERIOD; start_i <= '0'; wait until ready_o='1';
+		assert output_o="00000000000100000000000000000000"
+		report "Error!!!"
+		severity failure;
+		
+
+		--		  seeeeeeeefffffffffffffffffffffff
+		-- -0 -0 = -0  
+		wait for CLK_PERIOD; start_i <= '1'; 
+		opa_i <= "10000000000000000000000000000000";  
+		opb_i <= "10000000000000000000000000000000"; 
+		fpu_op_i <= "000";
+		rmode_i <= "00";
+		wait for CLK_PERIOD; start_i <= '0'; wait until ready_o='1';
+		assert output_o="10000000000000000000000000000000"
+		report "Error!!!"
+		severity failure;
+		
+		--		  seeeeeeeefffffffffffffffffffffff
+		-- 0 + x = x 
+		wait for CLK_PERIOD; start_i <= '1'; 
+		opa_i <= "00000000000000000000000000000000";  
+		opb_i <= "01000010001000001000000000100000"; 
+		fpu_op_i <= "000";
+		rmode_i <= "00";
+		wait for CLK_PERIOD; start_i <= '0'; wait until ready_o='1';
+		assert output_o="01000010001000001000000000100000"
+		report "Error!!!"
+		severity failure;
+		
 
 		----------------------------------------------------------------------------------------------------------------------------------------------------
 		assert false

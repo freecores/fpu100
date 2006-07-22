@@ -372,7 +372,7 @@ begin
 			if s_start_i ='1' then
 				s_state <= busy;
 				s_count <= 0;
-			elsif s_count=5 and ((fpu_op_i="000") or (fpu_op_i="001")) then
+			elsif s_count=6 and ((fpu_op_i="000") or (fpu_op_i="001")) then
 				s_state <= waiting;
 				ready_o <= '1';
 				s_count <=0;
